@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Astral Hearts v0.3</title>
+<style>
+:root{
+  --bg:#0d1020;--panel:#181e34;--panel2:#232a47;--panel3:#2d3557;--line:#3a4465;
+  --text:#f7f8ff;--muted:#aeb6d9;--accent:#8c7dff;--accent2:#ff90c8;--good:#70e2aa;
+  --danger:#ff7584;--gold:#ffd36a;--fire:#ff8a66;--ice:#79c7ff;--nature:#86e28c;--light:#ffe89a;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+radial-gradient(circle at 20% 0%,rgba(109,89,255,.2),transparent 28%),
+linear-gradient(180deg,#0c0f1e,#14172a);color:var(--text);min-height:100vh}
+button,select{font:inherit}button{border:0;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+#app{max-width:900px;margin:auto;padding:14px 14px 105px;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;display:flex;gap:10px;justify-content:space-between;align-items:center;
+padding:8px 0 11px;background:linear-gradient(180deg,rgba(13,16,32,.98),rgba(13,16,32,.86),transparent)}
+.brand{font-weight:900}.wallet{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:rgba(24,30,52,.96);border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:.84rem}
+.screen{display:none}.screen.active{display:block}
+.card{background:linear-gradient(180deg,var(--panel),#171b30);border:1px solid #313a5b;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 10px 28px rgba(0,0,0,.16)}
+.hero{min-height:215px;display:flex;align-items:flex-end;background:
+radial-gradient(circle at 80% 18%,rgba(255,144,200,.28),transparent 30%),
+radial-gradient(circle at 18% 15%,rgba(140,125,255,.34),transparent 28%),
+linear-gradient(145deg,#232b50,#15192f)}
+h1,h2,h3,p{margin-top:0}h1{font-size:2rem;margin-bottom:6px}.muted{color:var(--muted)}
+.tag{display:inline-block;font-size:.73rem;padding:4px 8px;border-radius:999px;background:#2a3254;color:#dce1ff;margin:0 4px 4px 0}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.menu-btn{padding:16px;min-height:92px;text-align:left;border-radius:15px;color:#fff;background:var(--panel2);border:1px solid var(--line)}
+.menu-btn strong{display:block;font-size:1.05rem}.menu-btn span{font-size:.82rem;color:var(--muted)}
+.primary,.secondary,.danger{width:100%;padding:12px 14px;margin-top:8px;border-radius:13px;color:#fff;font-weight:800}
+.primary{background:linear-gradient(90deg,var(--accent),#ad87ff)}.secondary{background:var(--panel2);border:1px solid var(--line)}
+.danger{background:#40232f;border:1px solid #6f3347}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.objective{padding:12px;border-left:4px solid var(--accent);background:#14192d;border-radius:10px}
+.stage-map{display:grid;gap:10px}
+.stage{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}
+.stage.locked{opacity:.5}.stage-icon{width:58px;height:58px;border-radius:15px;background:#14192d;display:grid;place-items:center;font-size:2rem}
+.stage small{color:var(--muted)}.stage button{padding:9px 11px;border-radius:10px;color:#fff;background:#394362;border:1px solid #4e5a80}
+.story-stage{min-height:470px;padding:16px;border-radius:18px;border:1px solid #3c4e77;display:flex;flex-direction:column;justify-content:flex-end;
+background:radial-gradient(circle at 65% 20%,rgba(255,255,255,.1),transparent 23%),linear-gradient(180deg,#31456e,#202c4e 62%,#14182c)}
+.portrait{text-align:center;font-size:6rem;margin-bottom:24px}.dialogue{background:rgba(10,13,27,.9);border:1px solid #455078;border-radius:16px;padding:14px}
+.speaker{font-weight:900;color:#ffc5e3;margin-bottom:7px}.choice{width:100%;margin-top:8px;padding:11px;border-radius:11px;text-align:left;color:#fff;background:#27304f;border:1px solid #465277}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.team-slot{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.team-slot select{width:100%;margin-top:8px;background:#14192d;color:#fff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.party{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.unit{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:11px;text-align:center}
+.unit.active{outline:2px solid var(--accent)}.unit .emoji{font-size:2.7rem}.hpbar,.xpbar{height:10px;background:#0f1324;border-radius:999px;overflow:hidden;margin:7px 0 3px}
+.hpfill,.xpfill{height:100%;transition:width .25s}.hpfill{background:linear-gradient(90deg,#5fe1a0,#90f1bf)}.enemy .hpfill{background:linear-gradient(90deg,#ff6979,#ff9b83)}.xpfill{background:linear-gradient(90deg,#7c8cff,#b18eff)}
+.enemy-card{text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:14px}.enemy-card .emoji{font-size:4.5rem}
+.skillbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.skill{padding:12px;border-radius:12px;color:#fff;background:#252d4b;border:1px solid #424d71;text-align:left}.skill strong{display:block}.skill small{color:var(--muted)}
+.log{min-height:130px;max-height:190px;overflow:auto;background:#111529;border-radius:12px;padding:10px;line-height:1.45;font-size:.9rem}
+.elem{font-size:.72rem;padding:3px 7px;border-radius:999px;background:#1b2038}.reward{color:var(--good);font-weight:800}
+.char-card{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:12px;margin-bottom:10px}
+.char-avatar{width:72px;height:72px;border-radius:15px;background:#14192d;display:grid;place-items:center;font-size:2.8rem}.stars{color:var(--gold)}
+.statline{font-size:.82rem;color:#d8def7;margin-top:3px}.affection{color:#ff9fca}.small-btn{padding:8px 10px;border-radius:10px;background:#30395b;color:#fff;border:1px solid #465175}
+.equip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.equip select{width:100%;background:#14192d;color:#fff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.pull-results{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.pull-card{text-align:center;border-radius:13px;padding:10px 5px;background:#202744;border:1px solid #3e496e}.pull-card .emoji{font-size:2.2rem}.pull-card .name{font-size:.78rem;font-weight:800}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(900px,100%);display:grid;grid-template-columns:repeat(7,1fr);background:rgba(14,17,31,.97);border-top:1px solid #313a5b;backdrop-filter:blur(10px);z-index:30}
+.nav button{padding:8px 3px 11px;background:transparent;color:var(--muted);font-size:.68rem}.nav .icon{display:block;font-size:1.15rem;margin-bottom:2px}.nav button.active{color:#fff}
+@media(max-width:650px){.team-grid,.party{grid-template-columns:1fr}.pull-results{grid-template-columns:repeat(2,1fr)}.char-card{grid-template-columns:64px 1fr}.char-card>:last-child{grid-column:1/-1}.stage{grid-template-columns:54px 1fr}.stage>button{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="topbar">
+  <div class="brand">✨ Astral Hearts <span class="muted">v0.3</span></div>
+  <div class="wallet">
+    <div class="pill">💎 <span id="gemsTop">0</span></div>
+    <div class="pill">🪙 <span id="goldTop">0</span></div>
+  </div>
+</div>
+
+<section id="home" class="screen active">
+  <div class="card hero">
+    <div>
+      <span class="tag">Offline</span><span class="tag">3-Unit Party</span><span class="tag">Elements</span><span class="tag">Equipment</span>
+      <h1>Astral Hearts</h1>
+      <p class="muted">Recruit heroines, strengthen your party, build bonds, and clear the academy's fractured-star incidents.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <button class="menu-btn" onclick="showScreen('map')"><strong>🗺️ Chapter Map</strong><span>Clear stages and unlock progression.</span></button>
+    <button class="menu-btn" onclick="showScreen('story')"><strong>📖 Story</strong><span>Dialogue choices and affection.</span></button>
+    <button class="menu-btn" onclick="showScreen('battle')"><strong>⚔️ Battle</strong><span>Fight with a three-character party.</span></button>
+    <button class="menu-btn" onclick="showScreen('characters')"><strong>👥 Characters</strong><span>Levels, stats and equipment.</span></button>
+  </div>
+  <div class="card">
+    <h3>Current Objective</h3>
+    <div id="objectiveText" class="objective"></div>
+    <button class="secondary" onclick="grantTestResources()">Developer Gift: +1500 Gems +2000 Gold</button>
+    <button class="danger" onclick="resetSave()">Reset v0.3 Save</button>
+  </div>
+</section>
+
+<section id="map" class="screen">
+  <div class="card"><h2>Chapter 1 · Fractured Dawn</h2><p class="muted">Stages unlock in order. Select a cleared or unlocked stage to battle.</p></div>
+  <div id="stageMap" class="stage-map"></div>
+</section>
+
+<section id="story" class="screen">
+  <div class="story-stage">
+    <div id="storyPortrait" class="portrait">🌸</div>
+    <div class="dialogue">
+      <div id="storySpeaker" class="speaker"></div>
+      <div id="storyText"></div>
+      <div id="storyChoices"></div>
+      <button id="storyContinue" class="primary" onclick="nextStory()">Continue</button>
+    </div>
+  </div>
+</section>
+
+<section id="team" class="screen">
+  <div class="card">
+    <h2>Team Formation</h2>
+    <p class="muted">Choose up to three unique owned characters. Fallen allies stay down for the current battle.</p>
+    <div id="teamGrid" class="team-grid"></div>
+    <button class="primary" onclick="saveTeam()">Save Team</button>
+  </div>
+</section>
+
+<section id="battle" class="screen">
+  <div class="card">
+    <div class="row">
+      <div><h2 id="battleStageTitle">Battle</h2><p class="muted" id="battleStageDesc"></p></div>
+      <button class="small-btn" onclick="showScreen('team')">Edit Team</button>
+    </div>
+  </div>
+  <div id="partyView" class="party"></div>
+  <div class="card enemy-card enemy">
+    <div class="emoji" id="enemyEmoji">👹</div>
+    <strong id="enemyName"></strong>
+    <div><span class="elem" id="enemyElement"></span></div>
+    <div class="hpbar"><div id="enemyHpBar" class="hpfill"></div></div>
+    <small id="enemyHpText"></small>
+  </div>
+  <div class="card">
+    <div id="battleLog" class="log"></div>
+    <div class="skillbar">
+      <button id="skill0" class="skill" onclick="useSkill(0)"></button>
+      <button id="skill1" class="skill" onclick="useSkill(1)"></button>
+    </div>
+    <button class="secondary" onclick="startBattle()">Restart Current Stage</button>
+  </div>
+</section>
+
+<section id="summon" class="screen">
+  <div class="card">
+    <h2>Starlight Banner</h2>
+    <p class="muted">5★ 3% · 4★ 17% · 3★ 80% · Hard pity at 20 pulls</p>
+    <div class="row">
+      <button class="primary" onclick="summon(1)">🌠 Pull x1 · 100</button>
+      <button class="primary" onclick="summon(10)">✨ Pull x10 · 900</button>
+    </div>
+    <p>Pity: <b><span id="pityCount">0</span>/20</b></p>
+    <div id="summonResults" class="pull-results"></div>
+  </div>
+</section>
+
+<section id="characters" class="screen">
+  <div class="card">
+    <h2>Your Characters</h2>
+    <p class="muted">Battles grant EXP. You can also spend gold to train, give gifts, and equip gear.</p>
+    <div id="characterList"></div>
+  </div>
+</section>
+
+<section id="inventory" class="screen">
+  <div class="card">
+    <h2>Equipment Inventory</h2>
+    <p class="muted">Equipment boosts stats immediately when assigned.</p>
+    <div id="inventoryList"></div>
+  </div>
+</section>
+</div>
+
+<nav class="nav">
+<button data-nav="home" class="active" onclick="showScreen('home')"><span class="icon">🏠</span>Home</button>
+<button data-nav="map" onclick="showScreen('map')"><span class="icon">🗺️</span>Map</button>
+<button data-nav="story" onclick="showScreen('story')"><span class="icon">📖</span>Story</button>
+<button data-nav="team" onclick="showScreen('team')"><span class="icon">🛡️</span>Team</button>
+<button data-nav="battle" onclick="showScreen('battle')"><span class="icon">⚔️</span>Battle</button>
+<button data-nav="summon" onclick="showScreen('summon')"><span class="icon">🌠</span>Summon</button>
+<button data-nav="characters" onclick="showScreen('characters')"><span class="icon">👥</span>Roster</button>
+</nav>
+
+<script>
+const chars=[
+{id:'airi',name:'Airi',rarity:5,role:'Fire Attacker',element:'Fire',emoji:'🌸',baseHp:120,baseAtk:29,skills:[['Flame Slash',1.25],['Blazing Heart',1.75]]},
+{id:'luna',name:'Luna',rarity:5,role:'Light Healer',element:'Light',emoji:'🌙',baseHp:140,baseAtk:21,skills:[['Moon Ray',1.05],['Lunar Grace',1.4]]},
+{id:'mina',name:'Mina',rarity:4,role:'Tank',element:'Nature',emoji:'🛡️',baseHp:170,baseAtk:18,skills:[['Shield Bash',1.0],['Guardian Crash',1.45]]},
+{id:'yuki',name:'Yuki',rarity:4,role:'Ice Attacker',element:'Ice',emoji:'❄️',baseHp:112,baseAtk:26,skills:[['Ice Lance',1.2],['Frozen Bloom',1.65]]},
+{id:'hana',name:'Hana',rarity:3,role:'Support',element:'Nature',emoji:'🌿',baseHp:118,baseAtk:20,skills:[['Vine Whip',1.0],['Verdant Pulse',1.35]]},
+{id:'rei',name:'Rei',rarity:3,role:'Archer',element:'Light',emoji:'🏹',baseHp:104,baseAtk:24,skills:[['Quick Shot',1.1],['Star Arrow',1.5]]},
+];
+const equipment=[
+{id:'bronzeSword',name:'Bronze Sword',slot:'Weapon',atk:5,hp:0},
+{id:'starWand',name:'Star Wand',slot:'Weapon',atk:8,hp:0},
+{id:'academyCoat',name:'Academy Coat',slot:'Armor',atk:0,hp:25},
+{id:'guardianMail',name:'Guardian Mail',slot:'Armor',atk:0,hp:40},
+];
+const stages=[
+{id:1,name:'1-1 Academy Gate',desc:'A weak shadow creature has appeared near the entrance.',enemy:'Shadow Slime',emoji:'👾',element:'Nature',hp:120,atk:13,rewardGold:220,rewardGems:40,exp:35},
+{id:2,name:'1-2 Broken Courtyard',desc:'A frost beast blocks the path to the old courtyard.',enemy:'Frost Fang',emoji:'🐺',element:'Ice',hp:180,atk:18,rewardGold:320,rewardGems:50,exp:55},
+{id:3,name:'1-3 Fractured Hall',desc:'A corrupted guardian protects the source of the disturbance.',enemy:'Astral Guardian',emoji:'👹',element:'Fire',hp:260,atk:24,rewardGold:480,rewardGems:80,exp:85},
+];
+const defaultState={
+gems:800,gold:1800,pity:0,storyIndex:0,storyCompleted:false,selectedStage:1,clearedStages:0,
+owned:{airi:{level:1,exp:0,affection:0,equip:{Weapon:'bronzeSword',Armor:'academyCoat'}}},
+team:['airi','',''],inventory:['bronzeSword','academyCoat','starWand','guardianMail']
+};
+let state=loadState();let battle=null;
+const story=[
+{speaker:'Airi',text:"You're awake. Good.",portrait:'🌸'},
+{speaker:'Airi',text:'The academy has detected three fractured-star incidents tonight.',portrait:'🌸'},
+{speaker:'You',text:'And you want me to fight them?',portrait:'😐'},
+{speaker:'Airi',text:'I want you to survive them. There is a difference.',portrait:'🌸',choice:true},
+{speaker:'Airi',text:"Come on. I'll show you how team formation works.",portrait:'🌸'},
+];
+
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function loadState(){try{const raw=JSON.parse(localStorage.getItem('astralHeartsSaveV03')||'{}');return {...clone(defaultState),...raw,owned:{...clone(defaultState.owned),...(raw.owned||{})}}}catch(e){return clone(defaultState)}}
+function saveState(){localStorage.setItem('astralHeartsSaveV03',JSON.stringify(state));updateUI()}
+function getChar(id){return chars.find(c=>c.id===id)}function stars(n){return '★'.repeat(n)}function ownedIds(){return Object.keys(state.owned)}
+function equipObj(id){return equipment.find(e=>e.id===id)}
+function expNeeded(level){return 60+level*35}
+function charStats(id){
+ const c=getChar(id),d=state.owned[id],lv=d.level;let hp=c.baseHp+(lv-1)*14,atk=c.baseAtk+(lv-1)*4;
+ Object.values(d.equip||{}).forEach(eid=>{const e=equipObj(eid);if(e){hp+=e.hp;atk+=e.atk}});
+ return {hp,atk};
+}
+function elementMult(att,def){
+ if(att==='Fire'&&def==='Nature')return 1.5;
+ if(att==='Nature'&&def==='Ice')return 1.5;
+ if(att==='Ice'&&def==='Fire')return 1.5;
+ if(att==='Nature'&&def==='Fire')return .75;
+ if(att==='Ice'&&def==='Nature')return .75;
+ if(att==='Fire'&&def==='Ice')return .75;
+ return 1;
+}
+
+function showScreen(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));
+ if(id==='map')renderMap(); if(id==='story')renderStory(); if(id==='team')renderTeam(); if(id==='battle')startBattle();
+ if(id==='characters')renderCharacters(); if(id==='summon')renderSummon(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateUI(){
+ document.getElementById('gemsTop').textContent=state.gems;document.getElementById('goldTop').textContent=state.gold;
+ document.getElementById('objectiveText').textContent=
+ !state.storyCompleted?'Finish the opening story scene.':
+ state.clearedStages<1?'Clear Stage 1-1 on the Chapter Map.':
+ state.clearedStages<3?'Strengthen your team and clear the remaining Chapter 1 stages.':
+ 'Chapter 1 cleared. Build your roster, level characters, and experiment with equipment.';
+ renderMap();renderCharacters();renderSummon();
+}
+function renderMap(){
+ const root=document.getElementById('stageMap');if(!root)return;
+ root.innerHTML=stages.map(s=>{const unlocked=s.id<=state.clearedStages+1;const cleared=s.id<=state.clearedStages;
+ return `<div class="stage ${unlocked?'':'locked'}">
+ <div class="stage-icon">${cleared?'✅':s.emoji}</div>
+ <div><strong>${s.name}</strong><div><span class="elem">${s.element}</span></div><small>${s.desc}</small></div>
+ <button ${unlocked?'':'disabled'} onclick="selectStage(${s.id})">${cleared?'Replay':'Battle'}</button></div>`}).join('');
+}
+function selectStage(id){state.selectedStage=id;saveState();showScreen('battle')}
+
+function renderStory(){
+ const sp=document.getElementById('storySpeaker'),tx=document.getElementById('storyText'),po=document.getElementById('storyPortrait'),ch=document.getElementById('storyChoices'),co=document.getElementById('storyContinue');
+ ch.innerHTML='';
+ if(state.storyCompleted){sp.textContent='Chapter Opening Complete';tx.textContent='The first fractured-star incident is waiting on the Chapter Map.';po.textContent='✨';co.style.display='block';co.textContent='Open Chapter Map';return}
+ const s=story[state.storyIndex];sp.textContent=s.speaker;tx.textContent=s.text;po.textContent=s.portrait;co.textContent='Continue';
+ if(s.choice){co.style.display='none';ch.innerHTML=`<button class="choice" onclick="chooseStory(5)">“Then stay close to me.”</button><button class="choice" onclick="chooseStory(3)">“I can handle myself.”</button>`}else co.style.display='block';
+}
+function chooseStory(gain){state.owned.airi.affection+=gain;state.storyIndex++;saveState();renderStory()}
+function nextStory(){
+ if(state.storyCompleted){showScreen('map');return}
+ state.storyIndex++;
+ if(state.storyIndex>=story.length){state.storyIndex=story.length-1;state.storyCompleted=true;state.gems+=120;state.owned.airi.affection+=2;alert('Opening complete! +120 gems and +2 Airi affection.')}
+ saveState();renderStory();
+}
+function renderTeam(){
+ const root=document.getElementById('teamGrid');if(!root)return;
+ const opts=['<option value="">Empty</option>'].concat(ownedIds().map(id=>`<option value="${id}">${getChar(id).name} · ${getChar(id).element}</option>`)).join('');
+ root.innerHTML=[0,1,2].map(i=>`<div class="team-slot"><strong>Slot ${i+1}</strong><select id="teamSlot${i}">${opts}</select></div>`).join('');
+ [0,1,2].forEach(i=>document.getElementById('teamSlot'+i).value=state.team[i]||'');
+}
+function saveTeam(){
+ const picks=[0,1,2].map(i=>document.getElementById('teamSlot'+i).value);const n=picks.filter(Boolean);
+ if(!picks[0])return alert('Slot 1 must contain a character.');if(new Set(n).size!==n.length)return alert('Characters cannot occupy multiple slots.');
+ state.team=picks;saveState();alert('Team saved.');
+}
+
+function startBattle(){
+ const s=stages.find(x=>x.id===state.selectedStage)||stages[0];const ids=state.team.filter(id=>id&&state.owned[id]);
+ if(!ids.length)ids.push(ownedIds()[0]);
+ battle={stage:s,turn:0,party:ids.map(id=>{const st=charStats(id);return{id,hp:st.hp,maxHp:st.hp}}),enemyHp:s.hp,ended:false};
+ document.getElementById('battleLog').innerHTML=`Stage ${s.name} begins.<br>`;
+ document.getElementById('battleStageTitle').textContent=s.name;document.getElementById('battleStageDesc').textContent=s.desc;
+ renderBattle();
+}
+function activeUnit(){return battle.party[battle.turn]}
+function nextLiving(start){
+ for(let i=1;i<=battle.party.length;i++){const idx=(start+i)%battle.party.length;if(battle.party[idx].hp>0)return idx}
+ return -1
+}
+function renderBattle(){
+ if(!battle)return;const s=battle.stage;
+ document.getElementById('enemyEmoji').textContent=s.emoji;document.getElementById('enemyName').textContent=s.enemy;document.getElementById('enemyElement').textContent=s.element;
+ document.getElementById('enemyHpBar').style.width=Math.max(0,battle.enemyHp)/s.hp*100+'%';document.getElementById('enemyHpText').textContent=`${Math.max(0,battle.enemyHp)} / ${s.hp} HP`;
+ const pv=document.getElementById('partyView');pv.innerHTML=battle.party.map((u,i)=>{const c=getChar(u.id),d=state.owned[u.id];return `<div class="unit ${i===battle.turn&&!battle.ended?'active':''}">
+ <div class="emoji">${c.emoji}</div><strong>${c.name} Lv.${d.level}</strong><div><span class="elem">${c.element}</span></div>
+ <div class="hpbar"><div class="hpfill" style="width:${Math.max(0,u.hp)/u.maxHp*100}%"></div></div><small>${Math.max(0,u.hp)} / ${u.maxHp} HP</small></div>`}).join('');
+ const u=activeUnit();if(u){const c=getChar(u.id);c.skills.forEach((sk,i)=>{const b=document.getElementById('skill'+i);b.innerHTML=`<strong>${sk[0]}</strong><small>${c.element} · x${sk[1]}</small>`;b.disabled=battle.ended||u.hp<=0})}
+}
+function log(t){const e=document.getElementById('battleLog');e.innerHTML+=t+'<br>';e.scrollTop=e.scrollHeight}
+function useSkill(i){
+ if(battle.ended)return;let u=activeUnit();if(!u||u.hp<=0){const nx=nextLiving(battle.turn);if(nx<0)return;battle.turn=nx;u=activeUnit()}
+ const c=getChar(u.id),st=charStats(u.id),sk=c.skills[i],mult=elementMult(c.element,battle.stage.element),dmg=Math.floor(st.atk*sk[1]*mult*(.9+Math.random()*.2));
+ battle.enemyHp-=dmg;log(`${c.name} uses <b>${sk[0]}</b> for <b>${dmg}</b>${mult>1?' <span class="reward">WEAK!</span>':mult<1?' (resisted)':''}.`);
+ if(battle.enemyHp<=0){battle.enemyHp=0;finishBattle();return}
+ const enemyDmg=Math.floor(battle.stage.atk*(.9+Math.random()*.25));u.hp-=enemyDmg;log(`${battle.stage.enemy} hits ${c.name} for <b>${enemyDmg}</b>.`);
+ if(u.hp<=0){u.hp=0;log(`<span style="color:#ff8d98"><b>${c.name} is defeated.</b></span>`)}
+ const nx=nextLiving(battle.turn);
+ if(nx<0){battle.ended=true;log('<span style="color:#ff8d98"><b>Party defeated. Improve your team and retry.</b></span>')}
+ else battle.turn=nx;
+ renderBattle();
+}
+function finishBattle(){
+ battle.ended=true;const s=battle.stage;state.gold+=s.rewardGold;state.gems+=s.rewardGems;
+ battle.party.forEach(u=>gainExp(u.id,s.exp));
+ if(s.id===state.clearedStages+1)state.clearedStages=s.id;
+ saveState();log(`<span class="reward">Victory! +${s.rewardGold} gold, +${s.rewardGems} gems, +${s.exp} EXP to party members.</span>`);renderBattle();
+}
+function gainExp(id,amount){
+ const d=state.owned[id];d.exp=(d.exp||0)+amount;
+ while(d.level<30&&d.exp>=expNeeded(d.level)){d.exp-=expNeeded(d.level);d.level++}
+}
+
+function rollChar(){state.pity++;let rarity;const r=Math.random()*100;if(state.pity>=20)rarity=5;else if(r<3)rarity=5;else if(r<20)rarity=4;else rarity=3;if(rarity===5)state.pity=0;const pool=chars.filter(c=>c.rarity===rarity);return pool[Math.floor(Math.random()*pool.length)]}
+function summon(n){
+ const cost=n===10?900:100;if(state.gems<cost)return alert('Not enough gems.');state.gems-=cost;const res=[];
+ for(let i=0;i<n;i++){const c=rollChar(),dup=!!state.owned[c.id];if(dup)state.gold+=250;else state.owned[c.id]={level:1,exp:0,affection:0,equip:{Weapon:'',Armor:''}};res.push({c,dup})}
+ saveState();document.getElementById('summonResults').innerHTML=res.map(({c,dup})=>`<div class="pull-card"><div class="emoji">${c.emoji}</div><div class="stars">${stars(c.rarity)}</div><div class="name">${c.name}</div><small>${dup?'Dupe +250🪙':'NEW!'}</small></div>`).join('');
+}
+function renderSummon(){const p=document.getElementById('pityCount');if(p)p.textContent=state.pity}
+
+function renderCharacters(){
+ const root=document.getElementById('characterList');if(!root)return;
+ root.innerHTML=ownedIds().map(id=>{const c=getChar(id),d=state.owned[id],st=charStats(id),need=expNeeded(d.level),cost=250*d.level;
+ const wOpts=['<option value="">No Weapon</option>'].concat(state.inventory.map(eid=>equipObj(eid)).filter(e=>e&&e.slot==='Weapon').map(e=>`<option value="${e.id}">${e.name} (+${e.atk} ATK)</option>`)).join('');
+ const aOpts=['<option value="">No Armor</option>'].concat(state.inventory.map(eid=>equipObj(eid)).filter(e=>e&&e.slot==='Armor').map(e=>`<option value="${e.id}">${e.name} (+${e.hp} HP)</option>`)).join('');
+ return `<div class="char-card"><div class="char-avatar">${c.emoji}</div><div>
+ <div class="stars">${stars(c.rarity)}</div><strong>${c.name} · Lv.${d.level}</strong><div class="muted">${c.role} · ${c.element}</div>
+ <div class="statline">HP ${st.hp} · ATK ${st.atk}</div><div class="statline affection">♥ Affection ${d.affection}</div>
+ <div class="xpbar"><div class="xpfill" style="width:${Math.min(100,(d.exp||0)/need*100)}%"></div></div><small>${d.exp||0}/${need} EXP</small>
+ <div class="equip"><select onchange="equipChar('${id}','Weapon',this.value)">${wOpts}</select><select onchange="equipChar('${id}','Armor',this.value)">${aOpts}</select></div>
+ </div><div><button class="small-btn" onclick="train('${id}')">Train<br><small>${cost} 🪙</small></button><button class="small-btn" style="margin-top:6px" onclick="gift('${id}')">Gift<br><small>100 🪙</small></button></div></div>`;
+ }).join('');
+ ownedIds().forEach(id=>{const d=state.owned[id];const selects=root.querySelectorAll(`.char-card`);});
+ const cards=[...root.children];ownedIds().forEach((id,idx)=>{const sels=cards[idx].querySelectorAll('select');sels[0].value=state.owned[id].equip?.Weapon||'';sels[1].value=state.owned[id].equip?.Armor||''});
+}
+function equipChar(id,slot,val){
+ const d=state.owned[id];d.equip=d.equip||{Weapon:'',Armor:''};
+ if(val){for(const oid of ownedIds()){if(oid!==id&&state.owned[oid].equip?.[slot]===val)state.owned[oid].equip[slot]=''}}
+ d.equip[slot]=val;saveState();
+}
+function train(id){const d=state.owned[id],cost=250*d.level;if(d.level>=30)return alert('Prototype level cap reached.');if(state.gold<cost)return alert('Not enough gold.');state.gold-=cost;gainExp(id,expNeeded(d.level));saveState()}
+function gift(id){if(state.gold<100)return alert('Not enough gold.');state.gold-=100;state.owned[id].affection+=2;saveState()}
+function grantTestResources(){state.gems+=1500;state.gold+=2000;saveState()}
+function resetSave(){if(!confirm('Reset all v0.3 progress?'))return;state=clone(defaultState);localStorage.removeItem('astralHeartsSaveV03');saveState();showScreen('home')}
+
+updateUI();renderStory();renderTeam();
+</script>
+</body>
+</html>
